@@ -1,1167 +1,1119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Savoury Bean Clicker</title>
- <script
-src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></s
-cript>
- <script
-src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></
-script>
- <script
-src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js
-"></script>
- <style>
- :root {
- --primary: #7CB342;
- --primary-dark: #558B2F;
- --secondary: #FF9800;
- --accent: #5D4037;
- --light: #F1F8E9;
- --dark: #33691E;
- --card-bg: rgba(255, 255, 255, 0.9);
- --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
- }
- 
- * {
- margin: 0;
- padding: 0;
- box-sizing: border-box;
- font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
- }
- 
- body {
- background: linear-gradient(135deg, var(--primary),
-var(--primary-dark));
- min-height: 100vh;
- display: flex;
- flex-direction: column;
- align-items: center;
- padding: 20px;
- color: #2E2E2E;
- }
- 
- .container {
- width: 100%;
- max-width: 1200px;
- display: grid;
- grid-template-columns: 1fr 2fr 1fr;
- gap: 20px;
- }
- 
- .panel {
- background: var(--card-bg);
- border-radius: 20px;
- padding: 25px;
- box-shadow: var(--shadow);
- backdrop-filter: blur(10px);
- }
- 
- .main-panel {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- }
- 
- h1 {
- color: white;
- margin-bottom: 10px;
- font-size: 2.8rem;
- text-align: center;
- text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
- }
- 
- .subtitle {
- color: white;
- margin-bottom: 30px;
- font-size: 1.2rem;
- text-align: center;
- opacity: 0.9;
- }
- 
- .counter-container {
- background: white;
- border-radius: 18px;
- padding: 20px 30px;
- margin: 20px 0;
- box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
- width: 100%;
- max-width: 300px;
- }
- 
- .counter {
- font-size: 3.2rem;
- font-weight: 800;
- color: var(--dark);
- text-align: center;
- }
- 
- .counter-label {
- font-size: 1.1rem;
- color: var(--accent);
- text-align: center;
- margin-top: 5px;
- font-weight: 500;
- }
- 
- .bean-container {
- margin: 30px 0;
- position: relative;
- display: flex;
- justify-content: center;
- }
- 
- .bean {
- width: 220px;
- height: 140px;
- background: linear-gradient(135deg, #8D6E63, #5D4037);
- border-radius: 50%;
- cursor: pointer;
- box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
- transition: all 0.2s ease;
- position: relative;
- overflow: hidden;
- }
- 
- .bean:before {
- content: "";
- position: absolute;
- top: 25px;
- left: 55px;
- width: 110px;
- height: 90px;
- background: linear-gradient(135deg, #A1887F, #795548);
- border-radius: 50%;
- }
- 
- .bean:after {
- content: "";
- position: absolute;
- top: 50px;
- left: 80px;
- width: 60px;
- height: 40px;
- background: #5D4037;
- border-radius: 50%;
- }
- 
- .bean:hover {
- transform: scale(1.08);
- box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
- }
- 
- .bean:active {
- transform: scale(0.96);
- box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
- }
- 
- .auth-container {
- width: 100%;
- max-width: 300px;
- }
- 
- .auth-form {
- display: flex;
- flex-direction: column;
- gap: 15px;
- }
- 
- input {
- padding: 14px 18px;
- border: 1px solid #E0E0E0;
- border-radius: 12px;
- font-size: 1rem;
- transition: all 0.3s;
- }
- 
- input:focus {
- outline: none;
- border-color: var(--primary);
- box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.2);
- }
- 
- button {
- background-color: var(--secondary);
- color: white;
- border: none;
- padding: 14px 20px;
- border-radius: 12px;
- cursor: pointer;
- font-size: 1rem;
- font-weight: 600;
- transition: all 0.3s;
- }
- 
- button:hover {
- background-color: #F57C00;
- transform: translateY(-2px);
- }
- 
- button:active {
- transform: translateY(0);
- }
- 
- .auth-toggle {
- margin-top: 15px;
- color: var(--accent);
- cursor: pointer;
- text-align: center;
- font-weight: 500;
- }
- 
- .user-info {
- text-align: center;
- }
- 
- .save-indicator {
- margin-top: 15px;
- font-size: 0.9rem;
- color: var(--accent);
- height: 20px;
- text-align: center;
- }
- 
- .click-effect {
- position: absolute;
- width: 40px;
- height: 40px;
- background-color: rgba(255, 235, 59, 0.7);
- border-radius: 50%;
- pointer-events: none;
- animation: clickAnimation 0.5s forwards;
- }
- 
- @keyframes clickAnimation {
- 0% {
- transform: scale(0);
- opacity: 1;
- }
- 100% {
- transform: scale(2);
- opacity: 0;
- }
- }
- 
- .hidden {
- display: none;
- }
- 
- .error-message {
- color: #f44336;
- font-size: 0.9rem;
- margin-top: 5px;
- text-align: center;
- }
- 
- .setup-message {
- background: #ffeb3b;
- padding: 15px;
- border-radius: 12px;
- margin: 15px 0;
- font-size: 0.9rem;
- }
- 
- .local-warning {
- background: #ffcdd2;
- padding: 15px;
- border-radius: 12px;
- margin: 10px 0;
- font-size: 0.9rem;
- text-align: center;
- }
- 
- .upgrades-panel h2, .stats-panel h2 {
- color: var(--dark);
- margin-bottom: 20px;
- font-size: 1.5rem;
- border-bottom: 2px solid var(--light);
- padding-bottom: 10px;
- }
- 
- .upgrade-item {
- background: white;
- border-radius: 12px;
- padding: 15px;
- margin-bottom: 15px;
- box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
- transition: all 0.3s;
- cursor: pointer;
- border: 1px solid #E0E0E0;
- }
- 
- .upgrade-item:hover {
- transform: translateY(-3px);
- box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
- }
- 
- .upgrade-item.disabled {
- opacity: 0.6;
- cursor: not-allowed;
- }
- 
- .upgrade-item.disabled:hover {
- transform: none;
- box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
- }
- 
- .upgrade-header {
- display: flex;
- justify-content: space-between;
- align-items: center;
- margin-bottom: 8px;
- }
- 
- .upgrade-name {
- font-weight: 600;
- color: var(--dark);
- }
- 
- .upgrade-cost {
- font-weight: 700;
- color: var(--secondary);
- }
- 
- .upgrade-desc {
- font-size: 0.9rem;
- color: #666;
- margin-bottom: 10px;
- }
- 
- .upgrade-level {
- display: flex;
- justify-content: space-between;
- font-size: 0.85rem;
- color: #777;
- }
- 
- .stats-grid {
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 15px;
- }
- 
- .stat-item {
- background: white;
- border-radius: 12px;
- padding: 15px;
- text-align: center;
- box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
- }
- 
- .stat-value {
- font-size: 1.5rem;
- font-weight: 700;
- color: var(--dark);
- }
- 
- .stat-label {
- font-size: 0.85rem;
- color: #666;
- margin-top: 5px;
- }
- 
- .beans-per-second {
- background: linear-gradient(135deg, #FFF9C4, #FFEB3B);
- padding: 10px;
- border-radius: 10px;
- text-align: center;
- margin-top: 15px;
- font-weight: 600;
- color: var(--dark);
- }
- .bean-particle {
- position: absolute;
- width: 24px;
- height: 16px;
- background: linear-gradient(135deg, #8D6E63, #5D4037);
- border-radius: 50% 50% 45% 55% / 60% 40% 60% 40%;
- pointer-events: none;
- opacity: 0.85;
- z-index: 2;
- animation: beanFall 1.2s forwards;
- }
- @keyframes beanFall {
- 0% {
- transform: translateY(0) scale(1) rotate(0deg);
- opacity: 0.85;
- }
- 80% {
- opacity: 0.85;
- }
- 100% {
- transform: translateY(120px) scale(0.7) rotate(30deg);
- opacity: 0;
- }
- }
- .settings-btn {
- position: absolute;
- top: 30px;
- right: 40px;
- background: linear-gradient(135deg, #7CB342, #5D4037);
- color: white;
- border: none;
- border-radius: 50px;
- padding: 12px 28px;
- font-size: 1.1rem;
- font-weight: 600;
- box-shadow: 0 4px 16px rgba(0,0,0,0.12);
- cursor: pointer;
- z-index: 10;
- transition: background 0.2s;
- }
- .settings-btn:hover {
- background: linear-gradient(135deg, #558B2F, #5D4037);
- }
- .settings-modal {
- position: fixed;
- top: 50px;
- right: 50px;
- background: #fff;
- border-radius: 18px;
- box-shadow: 0 8px 30px rgba(0,0,0,0.18);
- padding: 28px 32px;
- z-index: 100;
- min-width: 260px;
- display: none;
- }
- .settings-modal.active {
- display: block;
- }
- .settings-title {
- font-size: 1.3rem;
- font-weight: 700;
- color: var(--dark);
- margin-bottom: 18px;
- }
- .settings-row {
- display: flex;
- align-items: center;
- justify-content: space-between;
- margin-bottom: 16px;
- }
- .switch {
- position: relative;
- display: inline-block;
- width: 48px;
- height: 28px;
- }
- .switch input {
- opacity: 0;
- width: 0;
- height: 0;
- }
- .slider {
- position: absolute;
- cursor: pointer;
- top: 0;
- left: 0;
- right: 0;
- bottom: 0;
- background: #cfd8dc;
- border-radius: 28px;
- transition: .4s;
- }
- .slider:before {
- position: absolute;
- content: "";
- height: 22px;
- width: 22px;
- left: 3px;
- bottom: 3px;
- background: #7CB342;
- border-radius: 50%;
- transition: .4s;
- }
- input:checked + .slider {
- background: #7CB342;
- }
- input:checked + .slider:before {
- transform: translateX(20px);
- background: #5D4037;
- }
- </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savoury Bean Clicker</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary: #7CB342;
+            --primary-dark: #558B2F;
+            --secondary: #FF9800;
+            --accent: #5D4037;
+            --light: #F1F8E9;
+            --dark: #33691E;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #2E2E2E;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+        
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            text-align: center;
+            opacity: 0.9;
+        }
+        
+        .counter-container {
+            background: white;
+            border-radius: 18px;
+            padding: 20px 30px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .counter {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .counter-label {
+            font-size: 1.1rem;
+            color: var(--accent);
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        .bean-container {
+            margin: 30px 0;
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .bean {
+            width: 220px;
+            height: 140px;
+            background: linear-gradient(135deg, #8D6E63, #5D4037);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bean:before {
+            content: "";
+            position: absolute;
+            top: 25px;
+            left: 55px;
+            width: 110px;
+            height: 90px;
+            background: linear-gradient(135deg, #A1887F, #795548);
+            border-radius: 50%;
+        }
+        
+        .bean:after {
+            content: "";
+            position: absolute;
+            top: 50px;
+            left: 80px;
+            width: 60px;
+            height: 40px;
+            background: #5D4037;
+            border-radius: 50%;
+        }
+        
+        .bean:hover {
+            transform: scale(1.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .bean:active {
+            transform: scale(0.96);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .auth-container {
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        input {
+            padding: 14px 18px;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.2);
+        }
+        
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #F57C00;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .auth-toggle {
+            margin-top: 15px;
+            color: var(--accent);
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            text-align: center;
+        }
+        
+        .save-indicator {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            height: 20px;
+            text-align: center;
+        }
+        
+        .click-effect {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 235, 59, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: clickAnimation 0.5s forwards;
+        }
+        
+        @keyframes clickAnimation {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error-message {
+            color: #f44336;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .setup-message {
+            background: #ffeb3b;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .local-warning {
+            background: #ffcdd2;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .upgrades-panel h2, .stats-panel h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+        
+        .upgrade-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid #E0E0E0;
+        }
+        
+        .upgrade-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upgrade-item.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .upgrade-item.disabled:hover {
+            transform: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .upgrade-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .upgrade-cost {
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .upgrade-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-level {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #777;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .beans-per-second {
+            background: linear-gradient(135deg, #FFF9C4, #FFEB3B);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .bean-particle {
+            position: absolute;
+            width: 24px;
+            height: 16px;
+            background: linear-gradient(135deg, #8D6E63, #5D4037);
+            border-radius: 50% 50% 45% 55% / 60% 40% 60% 40%;
+            pointer-events: none;
+            opacity: 0.85;
+            z-index: 2;
+            animation: beanFall 1.2s forwards;
+        }
+
+        @keyframes beanFall {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 0.85;
+            }
+            80% {
+                opacity: 0.85;
+            }
+            100% {
+                transform: translateY(120px) scale(0.7) rotate(30deg);
+                opacity: 0;
+            }
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            background: linear-gradient(135deg, #7CB342, #5D4037);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+        .settings-btn:hover {
+            background: linear-gradient(135deg, #558B2F, #5D4037);
+        }
+        .settings-modal {
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            padding: 28px 32px;
+            z-index: 100;
+            min-width: 260px;
+            display: none;
+        }
+        .settings-modal.active {
+            display: block;
+        }
+        .settings-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 18px;
+        }
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 28px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #cfd8dc;
+            border-radius: 28px;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background: #7CB342;
+            border-radius: 50%;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background: #7CB342;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background: #5D4037;
+        }
+    </style>
 </head>
 <body>
- <button class="settings-btn" id="settingsBtn">⚙️ Settings</button>
- <div class="settings-modal" id="settingsModal">
- <div class="settings-title">Settings</div>
- <div class="settings-row">
- <span>Particles</span>
- <label class="switch">
- <input type="checkbox" id="particlesSwitch" checked>
- <span class="slider"></span>
- </label>
- </div>
- <div class="settings-row">
- <span>Abbreviations</span>
- <label class="switch">
- <input type="checkbox" id="abbreviationsSwitch" checked>
- <span class="slider"></span>
- </label>
- </div>
- </div>
- <h1>Savoury Bean Clicker</h1>
- <p class="subtitle">Click the bean to collect beans! Unlock upgrades
-to boost your production.</p>
- 
- <div class="container">
- <div class="panel upgrades-panel">
- <h2>Upgrades</h2>
- <div class="upgrade-item" id="doubleBeanUpgrade">
- <div class="upgrade-header">
- <div class="upgrade-name">Double Bean</div>
- <div class="upgrade-cost">100</div>
- </div>
- <div class="upgrade-desc">Doubles beans gained per
-click</div>
- <div class="upgrade-level">Level: <span
-id="doubleBeanLevel">0</span></div>
- </div>
- 
- <div class="upgrade-item" id="autoClickerUpgrade">
- <div class="upgrade-header">
- <div class="upgrade-name">Auto Clicker</div>
- <div class="upgrade-cost">250</div>
- </div>
- <div class="upgrade-desc">Automatically collects beans
-every second</div>
- <div class="upgrade-level">Level: <span
-id="autoClickerLevel">0</span></div>
- </div>
- 
- <div class="upgrade-item" id="beanMultiplierUpgrade">
- <div class="upgrade-header">
- <div class="upgrade-name">Bean Multiplier</div>
- <div class="upgrade-cost">500</div>
- </div>
- <div class="upgrade-desc">Multiplies all bean gains by
-2x</div>
- <div class="upgrade-level">Level: <span
-id="beanMultiplierLevel">0</span></div>
- </div>
- 
- <div class="upgrade-item" id="goldenBeanUpgrade">
- <div class="upgrade-header">
- <div class="upgrade-name">Golden Bean</div>
- <div class="upgrade-cost">1000</div>
- </div>
- <div class="upgrade-desc">Chance to get 10x beans on
-click</div>
- <div class="upgrade-level">Level: <span
-id="goldenBeanLevel">0</span></div>
- </div>
- </div>
- 
- <div class="panel main-panel">
- <div id="setupMessage" class="setup-message hidden">
- <strong>Firebase Setup Required:</strong> Please enable
-Authentication and Realtime Database in your Firebase project.
- </div>
- 
- <div class="counter-container">
- <div class="counter" id="counter">0</div>
- <div class="counter-label">Total Beans</div>
- </div>
- 
- <div class="bean-container">
- <div class="bean" id="bean"></div>
- </div>
- 
- <div class="beans-per-second" id="beansPerSecond">0
-beans/second</div>
- 
- <div class="auth-container" id="authContainer">
- <div id="loginForm" class="auth-form">
- <h3>Sign In</h3>
-<input type="text" id="loginUsername"
-placeholder="Username" required>
- <input type="password" id="loginPassword"
-placeholder="Password" required>
- <div class="error-message" id="loginError"></div>
- <button id="loginBtn">Sign In</button>
- <div class="auth-toggle" id="showRegister">Don't have
-an account? Register</div>
- </div>
- 
- <div id="registerForm" class="auth-form hidden">
- <h3>Register</h3>
-<input type="text" id="registerUsername"
-placeholder="Username" required>
- <input type="password" id="registerPassword"
-placeholder="Password (min. 6 characters)" required>
- <div class="error-message" id="registerError"></div>
- <button id="registerBtn">Register</button>
-<div class="auth-toggle" id="showLogin">Already have
-an account? Sign In</div>
- </div>
- 
- <div id="userInfo" class="user-info hidden">
- <h3>Welcome, <span id="username"></span>!</h3>
- <p>Your progress is automatically saved.</p>
- <button id="logoutBtn">Sign Out</button>
- </div>
- 
- <div id="localStorageInfo" class="local-warning hidden">
- <h4>⚠️ Local Storage Only</h4>
- <p>Sign in to save your progress to the cloud!</p>
- </div>
- </div>
- 
- <div class="save-indicator" id="saveIndicator"></div>
- </div>
- 
- <div class="panel stats-panel">
- <h2>Statistics</h2>
- <div class="stats-grid">
- <div class="stat-item">
- <div class="stat-value" id="totalClicks">0</div>
- <div class="stat-label">Total Clicks</div>
- </div>
- <div class="stat-item">
- <div class="stat-value" id="clickMultiplier">1x</div>
- <div class="stat-label">Click Multiplier</div>
- </div>
- <div class="stat-item">
- <div class="stat-value" id="autoClickers">0</div>
- <div class="stat-label">Auto Clickers</div>
- </div>
- <div class="stat-item">
- <div class="stat-value" id="goldenChance">0%</div>
- <div class="stat-label">Golden Chance</div>
- </div>
- <div class="stat-item">
- <div class="stat-value" id="totalBeansEver">0</div>
- <div class="stat-label">Total Beans Ever</div>
- </div>
- </div>
- 
- <div class="beans-per-second">
- <div>Production Rate</div>
- <div id="productionRate">0 beans/second</div>
- </div>
- </div>
- </div>
- <script>
- const firebaseConfig = {
- apiKey: "AIzaSyAopTx5larFlUFz-iac-iz9BdqwZ-uQeP4",
- authDomain: "savoury-bean.firebaseapp.com",
- projectId: "savoury-bean",
- storageBucket: "savoury-bean.firebasestorage.app",
- messagingSenderId: "231585433185",
- appId: "1:231585433185:web:96e6731ebf3a7f693b0c20",
- measurementId: "G-4QXR3Q07DR"
- };
- let auth, database;
- let firebaseReady = false;
- 
- try {
- firebase.initializeApp(firebaseConfig);
- auth = firebase.auth();
- database = firebase.database();
- firebaseReady = true;
- } catch (error) {
- 
-document.getElementById('setupMessage').classList.remove('hidden');
- }
- let beans = 0;
- let userId = null;
- let username = null;
- let isSignedIn = false;
- let totalClicks = 0;
- let totalBeansEver = 0; // Track total beans ever gotten
- 
- let upgrades = {
- doubleBean: { level: 0, cost: 100, multiplier: 2 },
- autoClicker: { level: 0, cost: 250, beansPerSecond: 1 },
- beanMultiplier: { level: 0, cost: 500, multiplier: 2 },
- goldenBean: { level: 0, cost: 1000, chance: 0.1 }
- };
- 
- let autoClickInterval = null;
- 
- const counterElement = document.getElementById('counter');
- const beanElement = document.getElementById('bean');
- const saveIndicator = document.getElementById('saveIndicator');
- const localStorageInfo =
-document.getElementById('localStorageInfo');
- const beansPerSecondElement =
-document.getElementById('beansPerSecond');
- const productionRateElement =
-document.getElementById('productionRate');
- 
- const totalClicksElement = document.getElementById('totalClicks');
- const clickMultiplierElement =
-document.getElementById('clickMultiplier');
- const autoClickersElement =
-document.getElementById('autoClickers');
- const goldenChanceElement =
-document.getElementById('goldenChance');
- const totalBeansEverElement =
-document.getElementById('totalBeansEver');
- 
- const doubleBeanLevelElement =
-document.getElementById('doubleBeanLevel');
- const autoClickerLevelElement =
-document.getElementById('autoClickerLevel');
- const beanMultiplierLevelElement =
-document.getElementById('beanMultiplierLevel');
- const goldenBeanLevelElement =
-document.getElementById('goldenBeanLevel');
- 
- const authContainer = document.getElementById('authContainer');
- const loginForm = document.getElementById('loginForm');
- const registerForm = document.getElementById('registerForm');
- const userInfo = document.getElementById('userInfo');
- const loginUsername = document.getElementById('loginUsername');
- const loginPassword = document.getElementById('loginPassword');
- const registerUsername =
-document.getElementById('registerUsername');
- const registerPassword =
-document.getElementById('registerPassword');
- const loginBtn = document.getElementById('loginBtn');
- const registerBtn = document.getElementById('registerBtn');
- const logoutBtn = document.getElementById('logoutBtn');
- const showRegister = document.getElementById('showRegister');
- const showLogin = document.getElementById('showLogin');
- const usernameElement = document.getElementById('username');
- const loginError = document.getElementById('loginError');
- const registerError = document.getElementById('registerError');
- let particlesEnabled = true;
- let abbreviationsEnabled = true;
- const settingsBtn = document.getElementById('settingsBtn');
- const settingsModal = document.getElementById('settingsModal');
- const particlesSwitch =
-document.getElementById('particlesSwitch');
- const abbreviationsSwitch =
-document.getElementById('abbreviationsSwitch');
- settingsBtn.addEventListener('click', () => {
- settingsModal.classList.toggle('active');
- });
- particlesSwitch.addEventListener('change', (e) => {
- particlesEnabled = e.target.checked;
- saveSettings();
- });
- abbreviationsSwitch.addEventListener('change', (e) => {
- abbreviationsEnabled = e.target.checked;
- updateCounter();
- saveSettings();
- });
- function abbreviateNumber(num) {
- if (!abbreviationsEnabled) return num.toLocaleString();
- if (num >= 1e21) return (num / 1e21).toFixed(2) + 'SX';
- if (num >= 1e18) return (num / 1e18).toFixed(2) + 'QI';
- if (num >= 1e15) return (num / 1e15).toFixed(2) + 'QA';
- if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
- if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
- if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
- return num.toLocaleString();
- }
- function updateCounter() {
- counterElement.textContent =
-abbreviateNumber(Math.floor(beans));
- updateUpgradeButtons();
- updateStats();
- totalBeansEverElement.textContent =
-abbreviateNumber(Math.floor(totalBeansEver));
- }
- function createClickEffect(x, y) {
- const effect = document.createElement('div');
- effect.className = 'click-effect';
- effect.style.left = `${x - 20}px`;
- effect.style.top = `${y - 20}px`;
- document.querySelector('.bean-container').appendChild(effect);
- 
- setTimeout(() => {
- effect.remove();
- }, 500);
- }
- function createBeanParticles(x, y) {
- if (!particlesEnabled) return;
- const beanContainer =
-document.querySelector('.bean-container');
- const beanRect = beanElement.getBoundingClientRect();
- const containerRect = beanContainer.getBoundingClientRect();
- const beanCenterX = beanRect.left + beanRect.width / 2 -
-containerRect.left;
- const beanTopY = beanRect.top - containerRect.top + 20;
- const numParticles = 6 + Math.floor(Math.random() * 3); // 6-8
-particles
- for (let i = 0; i < numParticles; i++) {
- const particle = document.createElement('div');
- particle.className = 'bean-particle';
- // Randomize horizontal spread and initial position
- const spread = (Math.random() - 0.5) * 60;
- particle.style.left = `${beanCenterX + spread - 12}px`;
- particle.style.top = `${beanTopY}px`;
- // Randomize animation duration and rotation
- particle.style.animationDuration = `${1 + Math.random() *
-0.5}s`;
- particle.style.transform = `rotate(${Math.random() * 60 -
-30}deg)`;
- beanContainer.appendChild(particle);
- setTimeout(() => particle.remove(), 1300);
- }
- }
- function calculateBeansPerClick() {
- let beansPerClick = 1;
- beansPerClick *= Math.pow(upgrades.doubleBean.multiplier,
-upgrades.doubleBean.level);
- beansPerClick *= Math.pow(upgrades.beanMultiplier.multiplier,
-upgrades.beanMultiplier.level);
- if (upgrades.goldenBean.level > 0 && Math.random() <
-upgrades.goldenBean.chance * upgrades.goldenBean.level) {
- beansPerClick *= 10;
- }
- return beansPerClick;
- }
- function calculateBeansPerSecond() {
- return upgrades.autoClicker.level *
-upgrades.autoClicker.beansPerSecond;
- }
- function updateUpgradeButtons() {
- const upgradeElements = {
- doubleBean: document.getElementById('doubleBeanUpgrade'),
- autoClicker:
-document.getElementById('autoClickerUpgrade'),
- beanMultiplier:
-document.getElementById('beanMultiplierUpgrade'),
- goldenBean: document.getElementById('goldenBeanUpgrade')
- };
- 
- for (const [upgradeId, element] of
-Object.entries(upgradeElements)) {
- const upgrade = upgrades[upgradeId];
- const cost = upgrade.cost * Math.pow(1.5, upgrade.level);
- element.querySelector('.upgrade-cost').textContent =
-Math.floor(cost);
- if (beans >= cost) {
- element.classList.remove('disabled');
- } else {
- element.classList.add('disabled');
- }
- }
- }
- function updateStats() {
- totalClicksElement.textContent = totalClicks.toLocaleString();
- clickMultiplierElement.textContent =
-calculateBeansPerClick().toFixed(1) + 'x';
- autoClickersElement.textContent = upgrades.autoClicker.level;
- goldenChanceElement.textContent = (upgrades.goldenBean.chance
-* upgrades.goldenBean.level * 100).toFixed(1) + '%';
- const bps = calculateBeansPerSecond();
- beansPerSecondElement.textContent = `${bps} beans/second`;
- productionRateElement.textContent = `${bps} beans/second`;
- }
- function purchaseUpgrade(upgradeId) {
- const upgrade = upgrades[upgradeId];
- const cost = upgrade.cost * Math.pow(1.5, upgrade.level);
- 
- if (beans >= cost) {
- beans -= cost;
- upgrade.level++;
- document.getElementById(`${upgradeId}Level`).textContent =
-upgrade.level;
- if (upgradeId === 'autoClicker' && upgrade.level === 1) {
- startAutoClicker();
- }
- updateCounter();
- saveProgress();
- }
- }
- function startAutoClicker() {
- if (autoClickInterval) clearInterval(autoClickInterval);
- autoClickInterval = setInterval(() => {
- const bps = calculateBeansPerSecond();
- if (bps > 0) {
- beans += bps;
- totalBeansEver += bps;
- updateCounter();
-saveProgress();
- }
- }, 1000);
- }
- function saveProgress() {
- if (isSignedIn && userId && firebaseReady) {
- const gameData = {
- beans: beans,
-username: username,
-upgrades: upgrades,
-totalClicks: totalClicks,
-totalBeansEver: totalBeansEver,
-lastUpdated: Date.now()
- };
- 
- database.ref('users/' + userId).set(gameData)
- .then(() => {
- saveIndicator.textContent = 'Progress saved!';
- setTimeout(() => {
- saveIndicator.textContent = '';
- }, 2000);
- })
- .catch((error) => {
- saveIndicator.textContent = 'Error saving!';
- setTimeout(() => {
- saveIndicator.textContent = '';
- }, 3000);
- });
- }
- }
- function loadProgress() {
- if (isSignedIn && userId && firebaseReady) {
- database.ref('users/' + userId).once('value')
- .then((snapshot) => {
- const data = snapshot.val();
- if (data) {
- beans = data.beans || 0;
- upgrades = data.upgrades || upgrades;
- totalClicks = data.totalClicks || 0;
- totalBeansEver = data.totalBeansEver || beans;
- username = data.username || username;
- 
-updateCounter();
-doubleBeanLevelElement.textContent =
-upgrades.doubleBean.level;
- autoClickerLevelElement.textContent =
-upgrades.autoClicker.level;
- beanMultiplierLevelElement.textContent =
-upgrades.beanMultiplier.level;
- goldenBeanLevelElement.textContent =
-upgrades.goldenBean.level;
- 
-if (upgrades.autoClicker.level > 0) {
- startAutoClicker();
- }
-saveIndicator.textContent = 'Progress loaded!';
- setTimeout(() => {
- saveIndicator.textContent = '';
- }, 2000);
- }
- })
- .catch((error) => {
- saveIndicator.textContent = 'Error loading!';
- setTimeout(() => {
- saveIndicator.textContent = '';
- }, 3000);
- });
- }
- }
- function saveSettings() {
- localStorage.setItem('abbreviationsEnabled',
-abbreviationsEnabled ? '1' : '0');
- localStorage.setItem('particlesEnabled', particlesEnabled ?
-'1' : '0');
- }
- function loadSettings() {
- const abbr = localStorage.getItem('abbreviationsEnabled');
- if (abbr !== null) {
- abbreviationsEnabled = abbr === '1';
- abbreviationsSwitch.checked = abbreviationsEnabled;
- }
- const particles = localStorage.getItem('particlesEnabled');
- if (particles !== null) {
- particlesEnabled = particles === '1';
- particlesSwitch.checked = particlesEnabled;
- }
- }
- beanElement.addEventListener('click', (e) => {
- const beansPerClick = calculateBeansPerClick();
- beans += beansPerClick;
- totalBeansEver += beansPerClick;
- totalClicks++;
- updateCounter();
- createClickEffect(e.offsetX, e.offsetY);
- createBeanParticles(e.offsetX, e.offsetY); // Add falling bean
-particles
- saveProgress();
- });
- 
-document.getElementById('doubleBeanUpgrade').addEventListener('click', ()
-=> {
- purchaseUpgrade('doubleBean');
- });
- 
- 
-document.getElementById('autoClickerUpgrade').addEventListener('click', ()
-=> {
- purchaseUpgrade('autoClicker');
- });
- 
- 
-document.getElementById('beanMultiplierUpgrade').addEventListener('click',
-() => {
- purchaseUpgrade('beanMultiplier');
- });
- 
- 
-document.getElementById('goldenBeanUpgrade').addEventListener('click', ()
-=> {
- purchaseUpgrade('goldenBean');
- });
- if (firebaseReady) {
- auth.onAuthStateChanged((user) => {
- if (user) {
- userId = user.uid;
- isSignedIn = true;
- loginForm.classList.add('hidden');
-registerForm.classList.add('hidden');
-userInfo.classList.remove('hidden');
-localStorageInfo.classList.add('hidden');
-loadProgress();
- } else {
- userId = null;
- username = null;
- isSignedIn = false;
- userInfo.classList.add('hidden');
-loginForm.classList.remove('hidden');
-localStorageInfo.classList.remove('hidden');
-beans = 0;
- totalClicks = 0;
- totalBeansEver = 0;
- upgrades = {
- doubleBean: { level: 0, cost: 100, multiplier: 2
-},
- autoClicker: { level: 0, cost: 250,
-beansPerSecond: 1 },
- beanMultiplier: { level: 0, cost: 500, multiplier:
-2 },
- goldenBean: { level: 0, cost: 1000, chance: 0.1 }
- };
-if (autoClickInterval) {
- clearInterval(autoClickInterval);
-autoClickInterval = null;
- }
-updateCounter();
-doubleBeanLevelElement.textContent = '0';
- autoClickerLevelElement.textContent = '0';
- beanMultiplierLevelElement.textContent = '0';
- goldenBeanLevelElement.textContent = '0';
- loginError.textContent = '';
- registerError.textContent = '';
- }
- });
- } else {
- isSignedIn = false;
- loginForm.classList.add('hidden');
- registerForm.classList.add('hidden');
- userInfo.classList.add('hidden');
- localStorageInfo.classList.remove('hidden');
- }
- loginBtn.addEventListener('click', () => {
- if (!firebaseReady) {
- loginError.textContent = 'Firebase not configured. Please
-check setup.';
- return;
- }
- const username = loginUsername.value;
- const password = loginPassword.value;
- if (!username || !password) {
- loginError.textContent = 'Please enter both username and
-password';
- return;
- }
- const email = `${username}@savourybean.com`;
- auth.signInWithEmailAndPassword(email, password)
- .then((userCredential) => {
- loginUsername.value = '';
- loginPassword.value = '';
- loginError.textContent = '';
- })
- .catch((error) => {
- if (error.code === 'auth/user-not-found' || error.code ===
-'auth/wrong-password') {
- loginError.textContent = 'Invalid username or
-password';
- } else if (error.code === 'auth/configuration-not-found')
-{
- loginError.textContent = 'Authentication not
-configured. Please enable it in Firebase.';
- } else {
- loginError.textContent = 'Error signing in: ' +
-error.message;
- }
- });
- });
- registerBtn.addEventListener('click', () => {
- if (!firebaseReady) {
- registerError.textContent = 'Firebase not configured.
-Please check setup.';
- return;
- }
- const username = registerUsername.value;
- const password = registerPassword.value;
- if (!username) {
- registerError.textContent = 'Please enter a username';
- return;
- }
- if (password.length < 6) {
- registerError.textContent = "Password must be at least 6
-characters";
- return;
- }
- const email = `${username}@savourybean.com`;
- auth.createUserWithEmailAndPassword(email, password)
- .then((userCredential) => {
- const user = userCredential.user;
- return database.ref('users/' + user.uid).set({
- username: username,
-beans: 0,
-upgrades: upgrades,
-totalClicks: 0,
-createdAt: Date.now()
- });
- })
- .then(() => {
- registerUsername.value = '';
- registerPassword.value = '';
- registerError.textContent = '';
- })
- .catch((error) => {
- if (error.code === 'auth/email-already-in-use') {
- registerError.textContent = 'Username already exists';
- } else if (error.code === 'auth/configuration-not-found')
-{
- registerError.textContent = 'Authentication not
-configured. Please enable it in Firebase.';
- } else {
- registerError.textContent = 'Error registering: ' +
-error.message;
- }
- });
- });
- logoutBtn.addEventListener('click', () => {
- if (firebaseReady) {
- auth.signOut();
- }
- });
- showRegister.addEventListener('click', () => {
- loginForm.classList.add('hidden');
- registerForm.classList.remove('hidden');
- loginError.textContent = '';
- });
- showLogin.addEventListener('click', () => {
- registerForm.classList.add('hidden');
- loginForm.classList.remove('hidden');
- registerError.textContent = '';
- });
- function setupEnterKey(inputElement, buttonElement) {
- inputElement.addEventListener('keypress', (e) => {
- if (e.key === 'Enter') {
- buttonElement.click();
- }
- });
- }
- setupEnterKey(loginUsername, loginBtn);
- setupEnterKey(loginPassword, loginBtn);
- setupEnterKey(registerUsername, registerBtn);
- setupEnterKey(registerPassword, registerBtn);
- window.addEventListener('DOMContentLoaded', () => {
- loadSettings();
- updateCounter();
- });
- updateCounter();
- </script>
+    <button class="settings-btn" id="settingsBtn">⚙️ Settings</button>
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-title">Settings</div>
+        <div class="settings-row">
+            <span>Particles</span>
+            <label class="switch">
+                <input type="checkbox" id="particlesSwitch" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="settings-row">
+            <span>Abbreviations</span>
+            <label class="switch">
+                <input type="checkbox" id="abbreviationsSwitch" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    <h1>Savoury Bean Clicker</h1>
+    <p class="subtitle">Click the bean to collect beans! Unlock upgrades to boost your production.</p>
+    
+    <div class="container">
+        <div class="panel upgrades-panel">
+            <h2>Upgrades</h2>
+            <div class="upgrade-item" id="doubleBeanUpgrade">
+                <div class="upgrade-header">
+                    <div class="upgrade-name">Double Bean</div>
+                    <div class="upgrade-cost">100</div>
+                </div>
+                <div class="upgrade-desc">Doubles beans gained per click</div>
+                <div class="upgrade-level">Level: <span id="doubleBeanLevel">0</span></div>
+            </div>
+            
+            <div class="upgrade-item" id="autoClickerUpgrade">
+                <div class="upgrade-header">
+                    <div class="upgrade-name">Auto Clicker</div>
+                    <div class="upgrade-cost">250</div>
+                </div>
+                <div class="upgrade-desc">Automatically collects beans every second</div>
+                <div class="upgrade-level">Level: <span id="autoClickerLevel">0</span></div>
+            </div>
+            
+            <div class="upgrade-item" id="beanMultiplierUpgrade">
+                <div class="upgrade-header">
+                    <div class="upgrade-name">Bean Multiplier</div>
+                    <div class="upgrade-cost">500</div>
+                </div>
+                <div class="upgrade-desc">Multiplies all bean gains by 2x</div>
+                <div class="upgrade-level">Level: <span id="beanMultiplierLevel">0</span></div>
+            </div>
+            
+            <div class="upgrade-item" id="goldenBeanUpgrade">
+                <div class="upgrade-header">
+                    <div class="upgrade-name">Golden Bean</div>
+                    <div class="upgrade-cost">1000</div>
+                </div>
+                <div class="upgrade-desc">Chance to get 10x beans on click</div>
+                <div class="upgrade-level">Level: <span id="goldenBeanLevel">0</span></div>
+            </div>
+        </div>
+        
+        <div class="panel main-panel">
+            <div id="setupMessage" class="setup-message hidden">
+                <strong>Firebase Setup Required:</strong> Please enable Authentication and Realtime Database in your Firebase project.
+            </div>
+            
+            <div class="counter-container">
+                <div class="counter" id="counter">0</div>
+                <div class="counter-label">Total Beans</div>
+            </div>
+            
+            <div class="bean-container">
+                <div class="bean" id="bean"></div>
+            </div>
+            
+            <div class="beans-per-second" id="beansPerSecond">0 beans/second</div>
+            
+            <div class="auth-container" id="authContainer">
+                <div id="loginForm" class="auth-form">
+                    <h3>Sign In</h3>
+                    <input type="text" id="loginUsername" placeholder="Username" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <div class="error-message" id="loginError"></div>
+                    <button id="loginBtn">Sign In</button>
+                    <div class="auth-toggle" id="showRegister">Don't have an account? Register</div>
+                </div>
+                
+                <div id="registerForm" class="auth-form hidden">
+                    <h3>Register</h3>
+                    <input type="text" id="registerUsername" placeholder="Username" required>
+                    <input type="password" id="registerPassword" placeholder="Password (min. 6 characters)" required>
+                    <div class="error-message" id="registerError"></div>
+                    <button id="registerBtn">Register</button>
+                    <div class="auth-toggle" id="showLogin">Already have an account? Sign In</div>
+                </div>
+                
+                <div id="userInfo" class="user-info hidden">
+                    <h3>Welcome, <span id="username"></span>!</h3>
+                    <p>Your progress is automatically saved.</p>
+                    <button id="logoutBtn">Sign Out</button>
+                </div>
+                
+                <div id="localStorageInfo" class="local-warning hidden">
+                    <h4>⚠️ Local Storage Only</h4>
+                    <p>Sign in to save your progress to the cloud!</p>
+                </div>
+            </div>
+            
+            <div class="save-indicator" id="saveIndicator"></div>
+        </div>
+        
+        <div class="panel stats-panel">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalClicks">0</div>
+                    <div class="stat-label">Total Clicks</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="clickMultiplier">1x</div>
+                    <div class="stat-label">Click Multiplier</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="autoClickers">0</div>
+                    <div class="stat-label">Auto Clickers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="goldenChance">0%</div>
+                    <div class="stat-label">Golden Chance</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalBeansEver">0</div>
+                    <div class="stat-label">Total Beans Ever</div>
+                </div>
+            </div>
+            
+            <div class="beans-per-second">
+                <div>Production Rate</div>
+                <div id="productionRate">0 beans/second</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAopTx5larFlUFz-iac-iz9BdqwZ-uQeP4",
+            authDomain: "savoury-bean.firebaseapp.com",
+            projectId: "savoury-bean",
+            storageBucket: "savoury-bean.firebasestorage.app",
+            messagingSenderId: "231585433185",
+            appId: "1:231585433185:web:96e6731ebf3a7f693b0c20",
+            measurementId: "G-4QXR3Q07DR"
+        };
+
+        let auth, database;
+        let firebaseReady = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            database = firebase.database();
+            firebaseReady = true;
+        } catch (error) {
+            document.getElementById('setupMessage').classList.remove('hidden');
+        }
+
+        let beans = 0;
+        let userId = null;
+        let username = null;
+        let isSignedIn = false;
+        let totalClicks = 0;
+        let totalBeansEver = 0; // Track total beans ever gotten
+        
+        let upgrades = {
+            doubleBean: { level: 0, cost: 100, multiplier: 2 },
+            autoClicker: { level: 0, cost: 250, beansPerSecond: 1 },
+            beanMultiplier: { level: 0, cost: 500, multiplier: 2 },
+            goldenBean: { level: 0, cost: 1000, chance: 0.1 }
+        };
+        
+        let autoClickInterval = null;
+        
+        const counterElement = document.getElementById('counter');
+        const beanElement = document.getElementById('bean');
+        const saveIndicator = document.getElementById('saveIndicator');
+        const localStorageInfo = document.getElementById('localStorageInfo');
+        const beansPerSecondElement = document.getElementById('beansPerSecond');
+        const productionRateElement = document.getElementById('productionRate');
+        
+        const totalClicksElement = document.getElementById('totalClicks');
+        const clickMultiplierElement = document.getElementById('clickMultiplier');
+        const autoClickersElement = document.getElementById('autoClickers');
+        const goldenChanceElement = document.getElementById('goldenChance');
+        const totalBeansEverElement = document.getElementById('totalBeansEver');
+        
+        const doubleBeanLevelElement = document.getElementById('doubleBeanLevel');
+        const autoClickerLevelElement = document.getElementById('autoClickerLevel');
+        const beanMultiplierLevelElement = document.getElementById('beanMultiplierLevel');
+        const goldenBeanLevelElement = document.getElementById('goldenBeanLevel');
+        
+        const authContainer = document.getElementById('authContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const userInfo = document.getElementById('userInfo');
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const registerUsername = document.getElementById('registerUsername');
+        const registerPassword = document.getElementById('registerPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const usernameElement = document.getElementById('username');
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
+
+        let particlesEnabled = true;
+        let abbreviationsEnabled = true;
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const particlesSwitch = document.getElementById('particlesSwitch');
+        const abbreviationsSwitch = document.getElementById('abbreviationsSwitch');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.toggle('active');
+        });
+        particlesSwitch.addEventListener('change', (e) => {
+            particlesEnabled = e.target.checked;
+            saveSettings();
+        });
+        abbreviationsSwitch.addEventListener('change', (e) => {
+            abbreviationsEnabled = e.target.checked;
+            updateCounter();
+            saveSettings();
+        });
+
+        function abbreviateNumber(num) {
+            if (!abbreviationsEnabled) return num.toLocaleString();
+            if (num >= 1e36) return (num / 1e36).toFixed(2) + 'UDC';
+            if (num >= 1e33) return (num / 1e33).toFixed(2) + 'DC';
+            if (num >= 1e30) return (num / 1e30).toFixed(2) + 'NV';
+            if (num >= 1e27) return (num / 1e27).toFixed(2) + 'OCT';
+            if (num >= 1e24) return (num / 1e24s).toFixed(2) + 'SP';
+            if (num >= 1e21) return (num / 1e21).toFixed(2) + 'SX';
+            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'QI';
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'QA';
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            return num.toLocaleString();
+        }
+
+        function updateCounter() {
+            counterElement.textContent = abbreviateNumber(Math.floor(beans));
+            updateUpgradeButtons();
+            updateStats();
+            totalBeansEverElement.textContent = abbreviateNumber(Math.floor(totalBeansEver));
+        }
+
+        function createClickEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.style.left = `${x - 20}px`;
+            effect.style.top = `${y - 20}px`;
+            document.querySelector('.bean-container').appendChild(effect);
+            
+            setTimeout(() => {
+                effect.remove();
+            }, 500);
+        }
+
+        function createBeanParticles(x, y) {
+            if (!particlesEnabled) return;
+            const beanContainer = document.querySelector('.bean-container');
+            const beanRect = beanElement.getBoundingClientRect();
+            const containerRect = beanContainer.getBoundingClientRect();
+            const beanCenterX = beanRect.left + beanRect.width / 2 - containerRect.left;
+            const beanTopY = beanRect.top - containerRect.top + 20;
+            const numParticles = 6 + Math.floor(Math.random() * 3); // 6-8 particles
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'bean-particle';
+                // Randomize horizontal spread and initial position
+                const spread = (Math.random() - 0.5) * 60;
+                particle.style.left = `${beanCenterX + spread - 12}px`;
+                particle.style.top = `${beanTopY}px`;
+                // Randomize animation duration and rotation
+                particle.style.animationDuration = `${1 + Math.random() * 0.5}s`;
+                particle.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
+                beanContainer.appendChild(particle);
+                setTimeout(() => particle.remove(), 1300);
+            }
+        }
+
+        function calculateBeansPerClick() {
+            let beansPerClick = 1;
+            beansPerClick *= Math.pow(upgrades.doubleBean.multiplier, upgrades.doubleBean.level);
+            beansPerClick *= Math.pow(upgrades.beanMultiplier.multiplier, upgrades.beanMultiplier.level);
+            if (upgrades.goldenBean.level > 0 && Math.random() < upgrades.goldenBean.chance * upgrades.goldenBean.level) {
+                beansPerClick *= 10;
+            }
+            return beansPerClick;
+        }
+
+        function calculateBeansPerSecond() {
+            return upgrades.autoClicker.level * upgrades.autoClicker.beansPerSecond;
+        }
+
+        function updateUpgradeButtons() {
+            const upgradeElements = {
+                doubleBean: document.getElementById('doubleBeanUpgrade'),
+                autoClicker: document.getElementById('autoClickerUpgrade'),
+                beanMultiplier: document.getElementById('beanMultiplierUpgrade'),
+                goldenBean: document.getElementById('goldenBeanUpgrade')
+            };
+            
+            for (const [upgradeId, element] of Object.entries(upgradeElements)) {
+                const upgrade = upgrades[upgradeId];
+                const cost = upgrade.cost * Math.pow(1.5, upgrade.level);
+                element.querySelector('.upgrade-cost').textContent = Math.floor(cost);
+                if (beans >= cost) {
+                    element.classList.remove('disabled');
+                } else {
+                    element.classList.add('disabled');
+                }
+            }
+        }
+
+        function updateStats() {
+            totalClicksElement.textContent = totalClicks.toLocaleString();
+            clickMultiplierElement.textContent = calculateBeansPerClick().toFixed(1) + 'x';
+            autoClickersElement.textContent = upgrades.autoClicker.level;
+            goldenChanceElement.textContent = (upgrades.goldenBean.chance * upgrades.goldenBean.level * 100).toFixed(1) + '%';
+            const bps = calculateBeansPerSecond();
+            beansPerSecondElement.textContent = `${bps} beans/second`;
+            productionRateElement.textContent = `${bps} beans/second`;
+        }
+
+        function purchaseUpgrade(upgradeId) {
+            const upgrade = upgrades[upgradeId];
+            const cost = upgrade.cost * Math.pow(1.5, upgrade.level);
+            
+            if (beans >= cost) {
+                beans -= cost;
+                upgrade.level++;
+                document.getElementById(`${upgradeId}Level`).textContent = upgrade.level;
+                if (upgradeId === 'autoClicker' && upgrade.level === 1) {
+                    startAutoClicker();
+                }
+                updateCounter();
+                saveProgress();
+            }
+        }
+
+        function startAutoClicker() {
+            if (autoClickInterval) clearInterval(autoClickInterval);
+            autoClickInterval = setInterval(() => {
+                const bps = calculateBeansPerSecond();
+                if (bps > 0) {
+                    beans += bps;
+                    totalBeansEver += bps;
+                    updateCounter();
+                    saveProgress();
+                }
+            }, 1000);
+        }
+
+        function saveProgress() {
+            if (isSignedIn && userId && firebaseReady) {
+                const gameData = {
+                    beans: beans,
+                    username: username,
+                    upgrades: upgrades,
+                    totalClicks: totalClicks,
+                    totalBeansEver: totalBeansEver,
+                    lastUpdated: Date.now()
+                };
+                
+                database.ref('users/' + userId).set(gameData)
+                .then(() => {
+                    saveIndicator.textContent = 'Progress saved!';
+                    setTimeout(() => {
+                        saveIndicator.textContent = '';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    saveIndicator.textContent = 'Error saving!';
+                    setTimeout(() => {
+                        saveIndicator.textContent = '';
+                    }, 3000);
+                });
+            }
+        }
+
+        function loadProgress() {
+            if (isSignedIn && userId && firebaseReady) {
+                database.ref('users/' + userId).once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        beans = data.beans || 0;
+                        upgrades = data.upgrades || upgrades;
+                        totalClicks = data.totalClicks || 0;
+                        totalBeansEver = data.totalBeansEver || beans;
+                        username = data.username || username;
+                        
+                        updateCounter();
+                        doubleBeanLevelElement.textContent = upgrades.doubleBean.level;
+                        autoClickerLevelElement.textContent = upgrades.autoClicker.level;
+                        beanMultiplierLevelElement.textContent = upgrades.beanMultiplier.level;
+                        goldenBeanLevelElement.textContent = upgrades.goldenBean.level;
+                        
+                        if (upgrades.autoClicker.level > 0) {
+                            startAutoClicker();
+                        }
+                        
+                        saveIndicator.textContent = 'Progress loaded!';
+                        setTimeout(() => {
+                            saveIndicator.textContent = '';
+                        }, 2000);
+                    }
+                })
+                .catch((error) => {
+                    saveIndicator.textContent = 'Error loading!';
+                    setTimeout(() => {
+                        saveIndicator.textContent = '';
+                    }, 3000);
+                });
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('abbreviationsEnabled', abbreviationsEnabled ? '1' : '0');
+            localStorage.setItem('particlesEnabled', particlesEnabled ? '1' : '0');
+        }
+
+        function loadSettings() {
+            const abbr = localStorage.getItem('abbreviationsEnabled');
+            if (abbr !== null) {
+                abbreviationsEnabled = abbr === '1';
+                abbreviationsSwitch.checked = abbreviationsEnabled;
+            }
+            const particles = localStorage.getItem('particlesEnabled');
+            if (particles !== null) {
+                particlesEnabled = particles === '1';
+                particlesSwitch.checked = particlesEnabled;
+            }
+        }
+
+        beanElement.addEventListener('click', (e) => {
+            const beansPerClick = calculateBeansPerClick();
+            beans += beansPerClick;
+            totalBeansEver += beansPerClick;
+            totalClicks++;
+            updateCounter();
+            createClickEffect(e.offsetX, e.offsetY);
+            createBeanParticles(e.offsetX, e.offsetY); // Add falling bean particles
+            saveProgress();
+        });
+
+        document.getElementById('doubleBeanUpgrade').addEventListener('click', () => {
+            purchaseUpgrade('doubleBean');
+        });
+        
+        document.getElementById('autoClickerUpgrade').addEventListener('click', () => {
+            purchaseUpgrade('autoClicker');
+        });
+        
+        document.getElementById('beanMultiplierUpgrade').addEventListener('click', () => {
+            purchaseUpgrade('beanMultiplier');
+        });
+        
+        document.getElementById('goldenBeanUpgrade').addEventListener('click', () => {
+            purchaseUpgrade('goldenBean');
+        });
+
+        if (firebaseReady) {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    userId = user.uid;
+                    isSignedIn = true;
+                    loginForm.classList.add('hidden');
+                    registerForm.classList.add('hidden');
+                    userInfo.classList.remove('hidden');
+                    localStorageInfo.classList.add('hidden');
+                    loadProgress();
+                } else {
+                    userId = null;
+                    username = null;
+                    isSignedIn = false;
+                    userInfo.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                    localStorageInfo.classList.remove('hidden');
+                    beans = 0;
+                    totalClicks = 0;
+                    totalBeansEver = 0;
+                    upgrades = {
+                        doubleBean: { level: 0, cost: 100, multiplier: 2 },
+                        autoClicker: { level: 0, cost: 250, beansPerSecond: 1 },
+                        beanMultiplier: { level: 0, cost: 500, multiplier: 2 },
+                        goldenBean: { level: 0, cost: 1000, chance: 0.1 }
+                    };
+                    if (autoClickInterval) {
+                        clearInterval(autoClickInterval);
+                        autoClickInterval = null;
+                    }
+                    updateCounter();
+                    doubleBeanLevelElement.textContent = '0';
+                    autoClickerLevelElement.textContent = '0';
+                    beanMultiplierLevelElement.textContent = '0';
+                    goldenBeanLevelElement.textContent = '0';
+                    loginError.textContent = '';
+                    registerError.textContent = '';
+                }
+            });
+        } else {
+            isSignedIn = false;
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            userInfo.classList.add('hidden');
+            localStorageInfo.classList.remove('hidden');
+        }
+
+        loginBtn.addEventListener('click', () => {
+            if (!firebaseReady) {
+                loginError.textContent = 'Firebase not configured. Please check setup.';
+                return;
+            }
+            const username = loginUsername.value;
+            const password = loginPassword.value;
+            if (!username || !password) {
+                loginError.textContent = 'Please enter both username and password';
+                return;
+            }
+            const email = `${username}@savourybean.com`;
+            auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                loginUsername.value = '';
+                loginPassword.value = '';
+                loginError.textContent = '';
+            })
+            .catch((error) => {
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    loginError.textContent = 'Invalid username or password';
+                } else if (error.code === 'auth/configuration-not-found') {
+                    loginError.textContent = 'Authentication not configured. Please enable it in Firebase.';
+                } else {
+                    loginError.textContent = 'Error signing in: ' + error.message;
+                }
+            });
+        });
+
+        registerBtn.addEventListener('click', () => {
+            if (!firebaseReady) {
+                registerError.textContent = 'Firebase not configured. Please check setup.';
+                return;
+            }
+            const username = registerUsername.value;
+            const password = registerPassword.value;
+            if (!username) {
+                registerError.textContent = 'Please enter a username';
+                return;
+            }
+            if (password.length < 6) {
+                registerError.textContent = "Password must be at least 6 characters";
+                return;
+            }
+            const email = `${username}@savourybean.com`;
+            auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                return database.ref('users/' + user.uid).set({
+                    username: username,
+                    beans: 0,
+                    upgrades: upgrades,
+                    totalClicks: 0,
+                    createdAt: Date.now()
+                });
+            })
+            .then(() => {
+                registerUsername.value = '';
+                registerPassword.value = '';
+                registerError.textContent = '';
+            })
+            .catch((error) => {
+                if (error.code === 'auth/email-already-in-use') {
+                    registerError.textContent = 'Username already exists';
+                } else if (error.code === 'auth/configuration-not-found') {
+                    registerError.textContent = 'Authentication not configured. Please enable it in Firebase.';
+                } else {
+                    registerError.textContent = 'Error registering: ' + error.message;
+                }
+            });
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            if (firebaseReady) {
+                auth.signOut();
+            }
+        });
+
+        showRegister.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            loginError.textContent = '';
+        });
+
+        showLogin.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            registerError.textContent = '';
+        });
+
+        function setupEnterKey(inputElement, buttonElement) {
+            inputElement.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    buttonElement.click();
+                }
+            });
+        }
+
+        setupEnterKey(loginUsername, loginBtn);
+        setupEnterKey(loginPassword, loginBtn);
+        setupEnterKey(registerUsername, registerBtn);
+        setupEnterKey(registerPassword, registerBtn);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            updateCounter();
+        });
+
+        updateCounter();
+    </script>
 </body>
 </html>
